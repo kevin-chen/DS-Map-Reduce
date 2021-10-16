@@ -1,14 +1,17 @@
 package main
 
-import "os"
-import "fmt"
-import "math"
-import "mapreduce"
-import "strings"
-import "strconv"
+import (
+	"bufio"
+	"fmt"
+	"log"
+	"math"
+	"os"
+	"src/mapreduce"
+	"strconv"
+	"strings"
+)
+
 //import "math/rand"
-import "bufio"
-import "log"
 
 // A structure representing a single 2-D point
 type Point struct {
@@ -18,7 +21,6 @@ type Point struct {
 
 // The most recent centerpoints of each cluster
 var clusters []Point
-
 
 // usual 2-D Euclidian distance
 func distance(p1 Point, p2 Point) float64 {
@@ -44,24 +46,24 @@ func loadClusters(filename string) error {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		text:=scanner.Text()
+		text := scanner.Text()
 		words := strings.Split(text, " ")
-		x,err:=strconv.ParseFloat(words[1],64)
-		if err!=nil {
+		x, err := strconv.ParseFloat(words[1], 64)
+		if err != nil {
 			log.Fatalf("Can't parse float %s, skipping %s\n", words[1])
 		}
-		y,err:=strconv.ParseFloat(words[2],64)
-		if err!=nil {
+		y, err := strconv.ParseFloat(words[2], 64)
+		if err != nil {
 			log.Fatalf("Can't parse float %s, skipping\n", words[2])
 		}
-		cluster,err:=strconv.Atoi(words[3])
-		if err!=nil {
+		cluster, err := strconv.Atoi(words[3])
+		if err != nil {
 			log.Fatalf("Can't parse float %s, skipping\n", words[2])
 		}
-		for len(clusters)<=cluster {
-			clusters=append(clusters, Point{0,0})
+		for len(clusters) <= cluster {
+			clusters = append(clusters, Point{0, 0})
 		}
-		clusters[cluster]=Point{x,y}
+		clusters[cluster] = Point{x, y}
 	}
 	return nil
 }
@@ -93,21 +95,21 @@ func main() {
 		if err != nil {
 			log.Fatalf("Bad cluster count: %s\n", os.Args[4])
 		}
-//		iterationCount, err := strconv.Atoi(os.Args[5])
-//		if err != nil {
-//			log.Fatalf("Bad iteration count: %s\n", os.Args[5])
-//		}
-//		for clusterCount > 0 {
-//			clusters = append(clusters, Point{rand.Float64(), rand.Float64()})
-//			clusterCount--
-//		}
+		//		iterationCount, err := strconv.Atoi(os.Args[5])
+		//		if err != nil {
+		//			log.Fatalf("Bad iteration count: %s\n", os.Args[5])
+		//		}
+		//		for clusterCount > 0 {
+		//			clusters = append(clusters, Point{rand.Float64(), rand.Float64()})
+		//			clusterCount--
+		//		}
 
 		initClusters := func(clusterDataFile string) {
 			if loadClusters(clusterDataFile) != nil {
 				log.Printf("Can't open points file %s, initializing data\n", clusterDataFile)
 				maxClusterCount := clusterCount
 				for clusterCount > 0 {
-					clusters = append(clusters, Point{float64(clusterCount)/float64(maxClusterCount), float64(clusterCount)/float64(maxClusterCount)})
+					clusters = append(clusters, Point{float64(clusterCount) / float64(maxClusterCount), float64(clusterCount) / float64(maxClusterCount)})
 					clusterCount--
 				}
 			}
@@ -124,6 +126,6 @@ func main() {
 		} else {
 			initClusters(mapreduce.FinalName(os.Args[1]))
 			mapreduce.RunWorker(os.Args[2], os.Args[3], Map, Reduce, 100)
-		} 
+		}
 	}
 }
