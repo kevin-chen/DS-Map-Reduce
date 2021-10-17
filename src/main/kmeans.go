@@ -1,131 +1,207 @@
 package main
 
-// import (
-// 	"bufio"
-// 	"fmt"
-// 	"log"
-// 	"main/mapreduce"
-// 	"math"
-// 	"os"
-// 	"strconv"
-// 	"strings"
-// )
+import (
+	"bufio"
+	"fmt"
+	"log"
+	"main/mapreduce"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
 
-// //import "math/rand"
+//import "math/rand"
 
-// // A structure representing a single 2-D point
-// type Point struct {
-// 	x float64
-// 	y float64
-// }
+// A structure representing a single 2-D point
+type Point struct {
+	x float64
+	y float64
+}
 
-// // The most recent centerpoints of each cluster
-// var clusters []Point
+// The most recent centerpoints of each cluster
+var clusters []Point
 
-// // usual 2-D Euclidian distance
-// func distance(p1 Point, p2 Point) float64 {
-// 	first := math.Pow(float64(p2.x-p1.x), 2)
-// 	second := math.Pow(float64(p2.y-p1.y), 2)
-// 	return math.Sqrt(first + second)
-// }
+// usual 2-D Euclidian distance
+func distance(p1 Point, p2 Point) float64 {
+	first := math.Pow(float64(p2.x-p1.x), 2)
+	second := math.Pow(float64(p2.y-p1.y), 2)
+	return math.Sqrt(first + second)
+}
 
-// // complete an iteration of the algorithm by loading
-// // the results from the reduce phase, which indicates
-// // the new centerpoint of each cluster. These results
-// // are then used as the input to the subsequent phase.
-// // This function expects that the Reduce function
-// // will emit its results as a string consisting of
-// // three space-separated fields: the x-centerpoint,
-// // the y-centerpoint, and the cluster number, for example:
-// //     0.34344 0.988426 4
-// func loadClusters(filename string) error {
-// 	file, err := os.Open(filename)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer file.Close()
-// 	scanner := bufio.NewScanner(file)
-// 	for scanner.Scan() {
-// 		text := scanner.Text()
-// 		words := strings.Split(text, " ")
-// 		x, err := strconv.ParseFloat(words[1], 64)
-// 		if err != nil {
-// 			log.Fatalf("Can't parse float %s, skipping %s\n", words[1])
-// 		}
-// 		y, err := strconv.ParseFloat(words[2], 64)
-// 		if err != nil {
-// 			log.Fatalf("Can't parse float %s, skipping\n", words[2])
-// 		}
-// 		cluster, err := strconv.Atoi(words[3])
-// 		if err != nil {
-// 			log.Fatalf("Can't parse float %s, skipping\n", words[2])
-// 		}
-// 		for len(clusters) <= cluster {
-// 			clusters = append(clusters, Point{0, 0})
-// 		}
-// 		clusters[cluster] = Point{x, y}
-// 	}
-// 	return nil
-// }
+// complete an iteration of the algorithm by loading
+// the results from the reduce phase, which indicates
+// the new centerpoint of each cluster. These results
+// are then used as the input to the subsequent phase.
+// This function expects that the Reduce function
+// will emit its results as a string consisting of
+// three space-separated fields: the x-centerpoint,
+// the y-centerpoint, and the cluster number, for example:
+//     0.34344 0.988426 4
+func loadClusters(filename string) error {
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	fmt.Println("Reading File:", filename)
+	for scanner.Scan() {
+		text := scanner.Text()
+		words := strings.Split(text, " ")
+		fmt.Println("Load Cluster:", words)
+		x, err := strconv.ParseFloat(words[1], 64)
+		if err != nil {
+			log.Fatalf("Can't parse float %s, skipping %s\n", words[1])
+		}
+		y, err := strconv.ParseFloat(words[2], 64)
+		if err != nil {
+			log.Fatalf("Can't parse float %s, skipping\n", words[2])
+		}
+		cluster, err := strconv.Atoi(words[3])
+		if err != nil {
+			log.Fatalf("Can't parse float %s, skipping\n", words[2])
+		}
+		for len(clusters) <= cluster {
+			clusters = append(clusters, Point{0, 0})
+		}
+		clusters[cluster] = Point{x, y}
+	}
+	return nil
+}
 
-// // our simplified version of MapReduce does not supply a
-// // key to the Map function, as in the paper; only a value,
-// // which is a part of the input file content. the return
-// // value should be a list of key/value pairs, each represented
-// // by a mapreduce.KeyValue.
-// func Map(value string) []mapreduce.KeyValue {
-// 	// TODO your code here
-// }
+// our simplified version of MapReduce does not supply a
+// key to the Map function, as in the paper; only a value,
+// which is a part of the input file content. the return
+// value should be a list of key/value pairs, each represented
+// by a mapreduce.KeyValue.
+func Map(value string) []mapreduce.KeyValue {
+	// app := make([][]string, 0)
+	// fmt.Println(clusters)
+	results := []mapreduce.KeyValue{}
+	pointStrs := strings.Split(value, "\n")
+	for _, pointStr := range pointStrs {
+		if len(pointStr) != 0 {
+			pointSplit := strings.Split(pointStr, " ")
+			xStr := pointSplit[0]
+			yStr := pointSplit[1]
+			// clusterNumberStr = wordSplit[2]
+			xVal, error := strconv.ParseFloat(xStr, 64)
+			if error != nil {
+				fmt.Println("Error in Map X:", error)
+			}
+			yVal, error := strconv.ParseFloat(yStr, 64)
+			if error != nil {
+				fmt.Println("Error in Map Y:", error)
+			}
 
-// // called once for each key generated by Map, with a list
-// // of that key's associate values. should return a single
-// // output value for that key.
-// // The output value should be a string consisting
-// // of three space-separated numbers, as described
-// // in the comment for loadClusters.
-// func Reduce(key string, values []string) string {
-// 	// TODO your code here
-// }
+			currentPoint := Point{
+				x: xVal,
+				y: yVal,
+			}
 
-// func main() {
-// 	if len(os.Args) != 6 {
-// 		fmt.Printf("%s: Invalid invocation\n", os.Args[0])
-// 	} else {
-// 		clusterCount, err := strconv.Atoi(os.Args[4])
-// 		if err != nil {
-// 			log.Fatalf("Bad cluster count: %s\n", os.Args[4])
-// 		}
-// 		//		iterationCount, err := strconv.Atoi(os.Args[5])
-// 		//		if err != nil {
-// 		//			log.Fatalf("Bad iteration count: %s\n", os.Args[5])
-// 		//		}
-// 		//		for clusterCount > 0 {
-// 		//			clusters = append(clusters, Point{rand.Float64(), rand.Float64()})
-// 		//			clusterCount--
-// 		//		}
+			minDistance := math.Inf(1)
+			minClusterNumber := 0
+			for clusterNum, cluster := range clusters {
+				distBetCurrPoint := distance(currentPoint, cluster)
+				if distBetCurrPoint < minDistance {
+					minDistance = distBetCurrPoint
+					minClusterNumber = clusterNum
+				}
+			}
+			results = append(results, mapreduce.KeyValue{
+				Key:   strconv.Itoa(minClusterNumber),
+				Value: xStr + " " + yStr,
+			})
+		}
+	}
+	return results
+}
 
-// 		initClusters := func(clusterDataFile string) {
-// 			if loadClusters(clusterDataFile) != nil {
-// 				log.Printf("Can't open points file %s, initializing data\n", clusterDataFile)
-// 				maxClusterCount := clusterCount
-// 				for clusterCount > 0 {
-// 					clusters = append(clusters, Point{float64(clusterCount) / float64(maxClusterCount), float64(clusterCount) / float64(maxClusterCount)})
-// 					clusterCount--
-// 				}
-// 			}
-// 		}
-// 		if os.Args[1] == "master" {
-// 			initClusters(mapreduce.FinalName(os.Args[2]))
-// 			if os.Args[3] == "sequential" {
-// 				mapreduce.RunSingle(5, 3, os.Args[2], Map, Reduce)
-// 			} else {
-// 				mr := mapreduce.MakeMapReduce(5, 3, os.Args[2], os.Args[3])
-// 				// Wait until MR is done
-// 				<-mr.DoneChannel
-// 			}
-// 		} else {
-// 			initClusters(mapreduce.FinalName(os.Args[1]))
-// 			mapreduce.RunWorker(os.Args[2], os.Args[3], Map, Reduce, 100)
-// 		}
-// 	}
-// }
+// called once for each key generated by Map, with a list
+// of that key's associate values. should return a single
+// output value for that key.
+// The output value should be a string consisting
+// of three space-separated numbers, as described
+// in the comment for loadClusters.
+func Reduce(key string, values []string) string {
+	result := ""
+	xSum := 0.0
+	ySum := 0.0
+	// clusterNum, error := strconv.Atoi(key)
+	// if error != nil {
+	// 	fmt.Println(error)
+	// 	return error.Error()
+	// }
+	for _, pointStr := range values {
+		outputPoint := pointStr + " " + key + "\n"
+		result += outputPoint
+		pointSplit := strings.Split(pointStr, " ")
+		xStr := pointSplit[0]
+		yStr := pointSplit[1]
+		xVal, error := strconv.ParseFloat(xStr, 64)
+		if error != nil {
+			fmt.Println("Error in Map X:", error)
+		}
+		yVal, error := strconv.ParseFloat(yStr, 64)
+		if error != nil {
+			fmt.Println("Error in Map Y:", error)
+		}
+		xSum += xVal
+		ySum += yVal
+	}
+	// xAvg := xSum / float64(len(values))
+	// yAvg := ySum / float64(len(values))
+	// New cluster is at (xAvg, yAvg)
+	// newClusterCenter := Point{
+	// 	x: xAvg,
+	// 	y: yAvg,
+	// }
+	// clusters[clusterNum] = newClusterCenter
+	// clusters = append(clusters, newClusterCenter)
+
+	return result
+}
+
+func main() {
+	if len(os.Args) != 6 {
+		fmt.Printf("%s: Invalid invocation\n", os.Args[0])
+	} else {
+		clusterCount, err := strconv.Atoi(os.Args[4])
+		if err != nil {
+			log.Fatalf("Bad cluster count: %s\n", os.Args[4])
+		}
+		//		iterationCount, err := strconv.Atoi(os.Args[5])
+		//		if err != nil {
+		//			log.Fatalf("Bad iteration count: %s\n", os.Args[5])
+		//		}
+		//		for clusterCount > 0 {
+		//			clusters = append(clusters, Point{rand.Float64(), rand.Float64()})
+		//			clusterCount--
+		//		}
+
+		initClusters := func(clusterDataFile string) {
+			if loadClusters(clusterDataFile) != nil {
+				log.Printf("Can't open points file %s, initializing data\n", clusterDataFile)
+				maxClusterCount := clusterCount
+				for clusterCount > 0 {
+					clusters = append(clusters, Point{float64(clusterCount) / float64(maxClusterCount), float64(clusterCount) / float64(maxClusterCount)})
+					clusterCount--
+				}
+			}
+		}
+		if os.Args[1] == "master" {
+			initClusters(mapreduce.FinalName(os.Args[2]))
+			if os.Args[3] == "sequential" {
+				mapreduce.RunSingle(5, 3, os.Args[2], Map, Reduce)
+			} else {
+				mr := mapreduce.MakeMapReduce(5, 3, os.Args[2], os.Args[3])
+				// Wait until MR is done
+				<-mr.DoneChannel
+			}
+		} else {
+			initClusters(mapreduce.FinalName(os.Args[1]))
+			mapreduce.RunWorker(os.Args[2], os.Args[3], Map, Reduce, 100)
+		}
+	}
+}
