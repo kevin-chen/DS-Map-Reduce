@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"main/mapreduce"
 	"os"
-	"src/mapreduce"
 	"strings"
 )
 
