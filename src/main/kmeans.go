@@ -50,15 +50,15 @@ func loadClusters(filename string) error {
 		text := scanner.Text()
 		words := strings.Split(text, " ")
 		fmt.Println("Load Cluster:", words)
-		x, err := strconv.ParseFloat(words[1], 64)
+		x, err := strconv.ParseFloat(words[0], 64)
 		if err != nil {
 			log.Fatalf("Can't parse float %s, skipping %s\n", words[1])
 		}
-		y, err := strconv.ParseFloat(words[2], 64)
+		y, err := strconv.ParseFloat(words[1], 64)
 		if err != nil {
 			log.Fatalf("Can't parse float %s, skipping\n", words[2])
 		}
-		cluster, err := strconv.Atoi(words[3])
+		cluster, err := strconv.Atoi(words[2])
 		if err != nil {
 			log.Fatalf("Can't parse float %s, skipping\n", words[2])
 		}
