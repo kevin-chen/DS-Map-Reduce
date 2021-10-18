@@ -159,7 +159,7 @@ func Reduce(key string, values []string) string {
 	// }
 	// clusters[clusterNum] = newClusterCenter
 	// clusters = append(clusters, newClusterCenter)
-
+	fmt.Println(result)
 	return result
 }
 
