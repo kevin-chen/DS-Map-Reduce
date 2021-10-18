@@ -123,7 +123,6 @@ func Map(value string) []mapreduce.KeyValue {
 // of three space-separated numbers, as described
 // in the comment for loadClusters.
 func Reduce(key string, values []string) string {
-	result := ""
 	xSum := 0.0
 	ySum := 0.0
 	// clusterNum, error := strconv.Atoi(key)
@@ -132,8 +131,8 @@ func Reduce(key string, values []string) string {
 	// 	return error.Error()
 	// }
 	for _, pointStr := range values {
-		outputPoint := pointStr + " " + key + "\n"
-		result += outputPoint
+		// outputPoint := pointStr + " " + key + "\n"
+		// result += outputPoint
 		pointSplit := strings.Split(pointStr, " ")
 		xStr := pointSplit[0]
 		yStr := pointSplit[1]
@@ -157,8 +156,7 @@ func Reduce(key string, values []string) string {
 	// }
 	// clusters[clusterNum] = newClusterCenter
 	// clusters = append(clusters, newClusterCenter)
-	result += fmt.Sprintf("%f %f %s", xAvg, yAvg, key)
-	return result
+	return fmt.Sprintf("%f %f %s", xAvg, yAvg, key)
 }
 
 func main() {
