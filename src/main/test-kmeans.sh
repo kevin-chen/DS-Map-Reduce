@@ -8,7 +8,7 @@ mkdir TEMP >& /dev/null || true
 rm -rf TEMP/mrtmp.points.txt*
 
 for i in $(seq ${ITERATIONCOUNT}); do
-    go run kmeans.go master points.txt sequential ${CLUSTERCOUNT} ${ITERATIONCOUNT}| grep -vF rpc.Register: 
+    go run kmeans.go master points.txt sequential ${CLUSTERCOUNT} ${ITERATIONCOUNT}|& grep -vF rpc.Register: 
 done
 
 if [ -e TEMP/mrtmp.points.txt ]; then
