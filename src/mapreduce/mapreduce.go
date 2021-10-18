@@ -73,7 +73,7 @@ func InitMapReduce(nmap int, nreduce int,
 	mr.file = file
 	mr.masterAddress = master
 	mr.alive = true
-	mr.registerChannel = make(chan string,10)
+	mr.registerChannel = make(chan string, 10)
 	mr.DoneChannel = make(chan bool)
 
 	// initialize any additional state here
@@ -232,7 +232,6 @@ func MergeName(fileName string, ReduceJob int) string {
 	return "TEMP/mrtmp." + fileName + "-res-" + strconv.Itoa(ReduceJob)
 }
 
-
 func FinalName(fileName string) string {
 	return "TEMP/mrtmp." + fileName
 }
@@ -317,7 +316,7 @@ func (mr *MapReduce) Merge() {
 	}
 	w := bufio.NewWriter(file)
 	for _, k := range keys {
-		fmt.Fprintf(w, "%s: %s\n", k, kvs[k])
+		fmt.Fprintf(w, "%s\n", kvs[k])
 	}
 	w.Flush()
 	file.Close()
