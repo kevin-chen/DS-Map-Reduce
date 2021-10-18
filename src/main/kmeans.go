@@ -45,20 +45,18 @@ func loadClusters(filename string) error {
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
-	fmt.Println("Reading File:", filename)
 	for scanner.Scan() {
 		text := scanner.Text()
 		words := strings.Split(text, " ")
-		fmt.Println("Load Cluster:", words)
-		x, err := strconv.ParseFloat(words[0], 64)
+		x, err := strconv.ParseFloat(words[1], 64)
 		if err != nil {
 			log.Fatalf("Can't parse float %s, skipping %s\n", words[1])
 		}
-		y, err := strconv.ParseFloat(words[1], 64)
+		y, err := strconv.ParseFloat(words[2], 64)
 		if err != nil {
 			log.Fatalf("Can't parse float %s, skipping\n", words[2])
 		}
-		cluster, err := strconv.Atoi(words[2])
+		cluster, err := strconv.Atoi(words[3])
 		if err != nil {
 			log.Fatalf("Can't parse float %s, skipping\n", words[2])
 		}
@@ -150,8 +148,8 @@ func Reduce(key string, values []string) string {
 		xSum += xVal
 		ySum += yVal
 	}
-	// xAvg := xSum / float64(len(values))
-	// yAvg := ySum / float64(len(values))
+	xAvg := xSum / float64(len(values))
+	yAvg := ySum / float64(len(values))
 	// New cluster is at (xAvg, yAvg)
 	// newClusterCenter := Point{
 	// 	x: xAvg,
@@ -159,7 +157,7 @@ func Reduce(key string, values []string) string {
 	// }
 	// clusters[clusterNum] = newClusterCenter
 	// clusters = append(clusters, newClusterCenter)
-	fmt.Println(result)
+	result += fmt.Sprintf("%f %f %s", xAvg, yAvg, key)
 	return result
 }
 

@@ -316,7 +316,7 @@ func (mr *MapReduce) Merge() {
 	}
 	w := bufio.NewWriter(file)
 	for _, k := range keys {
-		fmt.Fprintf(w, "%s\n", kvs[k])
+		fmt.Fprintf(w, "%s: %s\n", k, kvs[k])
 	}
 	w.Flush()
 	file.Close()
