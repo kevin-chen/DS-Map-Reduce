@@ -73,9 +73,15 @@ func loadClusters(filename string) error {
 // which is a part of the input file content. the return
 // value should be a list of key/value pairs, each represented
 // by a mapreduce.KeyValue.
+/*
+Input: string of points + cluster classification
+Output: KeyValue{ a point as string, new cluster number as string }
+Purpose: Find better cluster for each point based on distance
+Behavior: iterate over all points given to the function, for each point
+iterate over all cluster centers, find distance from point to cluster center,
+find minimum distance => this will be point's new cluster classifcation
+*/
 func Map(value string) []mapreduce.KeyValue {
-	// app := make([][]string, 0)
-	// fmt.Println(clusters)
 	results := []mapreduce.KeyValue{}
 	pointStrs := strings.Split(value, "\n")
 	for _, pointStr := range pointStrs {
@@ -83,7 +89,6 @@ func Map(value string) []mapreduce.KeyValue {
 			pointSplit := strings.Split(pointStr, " ")
 			xStr := pointSplit[0]
 			yStr := pointSplit[1]
-			// clusterNumberStr = wordSplit[2]
 			xVal, error := strconv.ParseFloat(xStr, 64)
 			if error != nil {
 				fmt.Println("Error in Map X:", error)
@@ -100,7 +105,7 @@ func Map(value string) []mapreduce.KeyValue {
 
 			minDistance := math.Inf(1)
 			minClusterNumber := 0
-			for clusterNum, cluster := range clusters {
+			for clusterNum, cluster := range clusters { // cluster num is based on index of center point in cluster array
 				distBetCurrPoint := distance(currentPoint, cluster)
 				if distBetCurrPoint < minDistance {
 					minDistance = distBetCurrPoint
@@ -122,17 +127,17 @@ func Map(value string) []mapreduce.KeyValue {
 // The output value should be a string consisting
 // of three space-separated numbers, as described
 // in the comment for loadClusters.
+/*
+Input: string representing the cluster number, array of strings of points
+Output: new cluster center (point)
+Purpose: finds new cluster center by averaging all points in the cluster
+Behavior: iterate over all points, for each point sum the x positon and y position,
+after all points are read, find average x and y position for new cluter center
+*/
 func Reduce(key string, values []string) string {
 	xSum := 0.0
 	ySum := 0.0
-	// clusterNum, error := strconv.Atoi(key)
-	// if error != nil {
-	// 	fmt.Println(error)
-	// 	return error.Error()
-	// }
 	for _, pointStr := range values {
-		// outputPoint := pointStr + " " + key + "\n"
-		// result += outputPoint
 		pointSplit := strings.Split(pointStr, " ")
 		xStr := pointSplit[0]
 		yStr := pointSplit[1]
@@ -149,13 +154,6 @@ func Reduce(key string, values []string) string {
 	}
 	xAvg := xSum / float64(len(values))
 	yAvg := ySum / float64(len(values))
-	// New cluster is at (xAvg, yAvg)
-	// newClusterCenter := Point{
-	// 	x: xAvg,
-	// 	y: yAvg,
-	// }
-	// clusters[clusterNum] = newClusterCenter
-	// clusters = append(clusters, newClusterCenter)
 	return fmt.Sprintf("%f %f %s", xAvg, yAvg, key)
 }
 

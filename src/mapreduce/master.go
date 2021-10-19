@@ -25,6 +25,15 @@ func (mr *MapReduce) KillWorkers() []int {
 	return l
 }
 
+/*
+Input: MapReduce object
+Output: ints of shutdown workers
+Purpose: iterate over all map jobs, run map/reduce job threads for each map/reduce job (when worker is available)
+Behavior: first run map job: when a worker is available, run the map job on that worker,
+when worker is done, write to registerChannel to notify free worker; use wait group to wait
+for all threads to finish
+Similarly for Reduce Jobs
+*/
 func (mr *MapReduce) RunMaster() []int {
 	numMapJobs := mr.nMap
 	numReduceJobs := mr.nReduce
