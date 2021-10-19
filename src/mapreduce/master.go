@@ -61,9 +61,9 @@ func (mr *MapReduce) RunMaster() []int {
 			args := &DoJobArgs{mr.file, Reduce, i, mr.nMap}
 			ok := call(worker, "Worker.DoJob", args, &reply)
 			if !ok {
-				fmt.Println("Map Job", i, "has FAILED")
+				fmt.Println("Reduce Job", i, "has FAILED")
 			} else {
-				fmt.Println("Map Job", i, "is SUCCESS")
+				fmt.Println("Reduce Job", i, "is SUCCESS")
 			}
 			mr.registerChannel <- worker
 		}(availableWorker, reduceJob)
