@@ -44,6 +44,7 @@ func (mr *MapReduce) RunMaster() []int {
 			} else {
 				fmt.Println("Map Job", i, "is SUCCESS")
 			}
+			mr.registerChannel <- worker
 		}(availableWorker, mapJob)
 	}
 
