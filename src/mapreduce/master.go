@@ -32,7 +32,7 @@ func (mr *MapReduce) RunMaster() []int {
 
 	for mapJob := 0; mapJob < numMapJobs; mapJob++ {
 		availableWorker := <-mr.registerChannel
-		fmt.Println("USING WORKER", availableWorker)
+		fmt.Println("USING WORKER", availableWorker, "for Map Job")
 		w.Add(1)
 		go func(worker string, i int) {
 			defer w.Done()
@@ -49,12 +49,28 @@ func (mr *MapReduce) RunMaster() []int {
 	}
 
 	w.Wait()
-
 	fmt.Println("DONE WITH ALL MAP JOBS")
 
 	for reduceJob := 0; reduceJob < numReduceJobs; reduceJob++ {
-
+		availableWorker := <-mr.registerChannel
+		fmt.Println("USING WORKER", availableWorker, "for Reduce Job")
+		w.Add(1)
+		go func(worker string, i int) {
+			defer w.Done()
+			var reply DoJobReply
+			args := &DoJobArgs{mr.file, Reduce, i, mr.nMap}
+			ok := call(worker, "Worker.DoJob", args, &reply)
+			if !ok {
+				fmt.Println("Map Job", i, "has FAILED")
+			} else {
+				fmt.Println("Map Job", i, "is SUCCESS")
+			}
+			mr.registerChannel <- worker
+		}(availableWorker, reduceJob)
 	}
+
+	w.Wait()
+	fmt.Println("DONE WITH ALL REDUCE JOBS")
 
 	return mr.KillWorkers()
 }
