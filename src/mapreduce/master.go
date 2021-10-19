@@ -1,6 +1,7 @@
 package mapreduce
 
 import "fmt"
+import "sync"
 
 type WorkerInfo struct {
 	address string
@@ -27,10 +28,28 @@ func (mr *MapReduce) KillWorkers() []int {
 func (mr *MapReduce) RunMaster() []int {
 	numMapJobs := mr.nMap
 	numReduceJobs := mr.nReduce
+	var w sync.WaitGroup
 
 	for mapJob := 0; mapJob < numMapJobs; mapJob++ {
-		fmt.Println(<-mr.registerChannel)
+		availableWorker := <-mr.registerChannel
+		fmt.Println("USING WORKER", availableWorker)
+		w.Add(1)
+		go func(worker string, i int) {
+			defer w.Done()
+			var reply DoJobReply
+			args := &DoJobArgs{mr.file, Map, i, mr.nReduce}
+			ok := call(worker, "Worker.DoJob", args, &reply)
+			if !ok {
+				fmt.Println("Map Job", i, "has FAILED")
+			} else {
+				fmt.Println("Map Job", i, "is SUCCESS")
+			}
+		}(availableWorker, mapJob)
 	}
+
+	w.Wait()
+
+	fmt.Println("DONE WITH ALL MAP JOBS")
 
 	for reduceJob := 0; reduceJob < numReduceJobs; reduceJob++ {
 
